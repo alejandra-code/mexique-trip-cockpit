@@ -185,6 +185,31 @@
     textarea.jr{min-height:120px}
   }
   @media(min-width:1280px){ .tiles{grid-template-columns:repeat(4,1fr)} .wrap{max-width:1200px} }
+
+  /* ===== THEME : fond Bahía de Manzanillo + glassmorphisme ===== */
+  body{background:transparent}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(8,40,52,.52),rgba(8,40,52,.42)),
+      url('https://ecoadventurespuertoescondido.com/wp-content/uploads/2025/05/Bahia-de-Manzanillo-.jpg') center center/cover no-repeat;}
+  /* cartes en verre */
+  .card,.stat,.tile,.lst,.ev,.doc,.mcard{
+    background:rgba(255,255,255,.68)!important;
+    backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);
+    border:1px solid rgba(255,255,255,.5);
+    box-shadow:0 8px 30px rgba(8,40,52,.22);}
+  /* header & sidebar en verre foncé */
+  header{background:linear-gradient(135deg,rgba(9,44,58,.72),rgba(14,76,94,.56))!important;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+  @media(min-width:900px){#sidebar{background:linear-gradient(180deg,rgba(9,44,58,.64),rgba(11,61,79,.5))!important;
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}}
+  /* textes hors carte, lisibles sur la photo */
+  .stitle{color:#fff;text-shadow:0 1px 8px rgba(8,40,52,.55)}
+  .stitle .rule{background:linear-gradient(90deg,rgba(255,255,255,.55),transparent)}
+  .intro,.grp,.sync,.foot,.empty,.tl .day{color:rgba(255,255,255,.94)!important;text-shadow:0 1px 6px rgba(8,40,52,.55)}
+  .tl .day .r{background:rgba(255,255,255,.35)}
+  /* login sur la photo */
+  #login{background:transparent!important}
+  .lbox{background:rgba(255,255,255,.84)!important;backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border:1px solid rgba(255,255,255,.5)}
 </style>
 </head>
 <body>
