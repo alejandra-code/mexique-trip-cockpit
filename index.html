@@ -240,7 +240,7 @@
   $("loginBtn").addEventListener("click",async function(){
     var email=$("email").value.trim(); if(!email){return}
     $("loginMsg").className="msg"; $("loginMsg").textContent="Envoi…";
-    var {error}=await sb.auth.signInWithOtp({email:email});
+    var {error}=await sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:"https://alejandra-code.github.io/mexique-trip-cockpit/"}});
     if(error){$("loginMsg").className="msg err";$("loginMsg").textContent=error.message}
     else{$("loginMsg").className="msg ok";$("loginMsg").textContent="📩 Lien envoyé. Ouvre ton email sur cet appareil et clique le lien."}
   });
