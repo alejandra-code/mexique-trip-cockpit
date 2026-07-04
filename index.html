@@ -105,6 +105,8 @@
 
   /* messages / listings */
   .lst{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:11px;background:#fff}
+  .lphoto{width:100%;height:150px;object-fit:cover;border-radius:11px;display:block;margin-bottom:10px;background:var(--sand2)}
+  .lst .viewad{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;color:var(--teal);text-decoration:none}
   .lst .ln{font-weight:800;font-size:15px}
   .lst .lm{font-size:12px;color:var(--muted);margin-top:2px}
   .lst .st{font-size:9.5px;font-weight:800;text-transform:uppercase;padding:4px 9px;border-radius:20px;color:#fff;background:var(--amber)}
@@ -386,7 +388,8 @@
     items.forEach(function(L){
       var div=document.createElement("div");div.className="lst";
       var msgs=(L.msgs||[]).map(function(m){return '<div class="msg '+(m.who==="moi"?"moi":"hote")+'"><div class="mm">'+(m.who==="moi"?"Moi":"Contact")+" · "+esc(m.date_label||"")+'</div><div class="mb">'+esc(m.body)+"</div></div>"}).join("");
-      div.innerHTML='<div style="display:flex;gap:9px"><div style="flex:1"><div class="ln">'+esc(L.name)+'</div><div class="lm">'+[L.zone,L.rooms,L.price].filter(Boolean).map(esc).join(" · ")+(L.link?' · <a href="'+esc(L.link)+'" target="_blank" rel="noopener">lien ↗</a>':"")+'</div></div><span class="st">'+esc(L.status||"—")+'</span></div>'+
+      div.innerHTML=(L.photo?'<a href="'+esc(L.link||"#")+'" target="_blank" rel="noopener"><img class="lphoto" src="'+esc(L.photo)+'" loading="lazy" alt=""></a>':"")+
+        '<div style="display:flex;gap:9px"><div style="flex:1"><div class="ln">'+esc(L.name)+'</div><div class="lm">'+[L.zone,L.rooms,L.price].filter(Boolean).map(esc).join(" · ")+'</div>'+(L.link?'<a class="viewad" href="'+esc(L.link)+'" target="_blank" rel="noopener">Voir l\'annonce ↗</a>':"")+'</div><span class="st">'+esc(L.status||"—")+'</span></div>'+
         '<div style="margin:9px 0 3px">'+msgs+'</div>'+
         '<div class="addbar"><select data-who><option value="moi">Moi</option><option value="hote">Contact</option></select><input data-msg placeholder="Coller un message…"><button class="btn" data-add>+</button></div>'+
         '<div class="lfoot"><button class="del" data-cyc>↻ statut</button><button class="del" data-del>Supprimer</button></div>';
