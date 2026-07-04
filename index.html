@@ -155,6 +155,36 @@
   .sheet{background:#fff;width:100%;max-width:820px;border-radius:20px 20px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -6px 24px rgba(0,0,0,.2)}
   .sheet h3{margin:0 0 12px;font-size:16px}
   .sheet .rowb{display:flex;gap:8px}
+
+  /* ---- SIDEBAR (mobile: hidden) ---- */
+  #sidebar{display:none}
+
+  /* ================= DESKTOP ================= */
+  @media(min-width:900px){
+    #sidebar{display:flex;flex-direction:column;gap:3px;position:fixed;left:0;top:0;bottom:0;width:230px;
+      background:linear-gradient(180deg,var(--ocean),var(--ocean2));padding:calc(16px + env(safe-area-inset-top)) 12px 16px;overflow:auto;z-index:25;box-shadow:2px 0 18px rgba(11,61,79,.14)}
+    .sbrand{color:#fff;font-weight:800;font-size:16px;padding:4px 10px 16px}
+    .sbtn{display:flex;align-items:center;gap:12px;background:transparent;border:none;color:rgba(255,255,255,.8);font-size:14px;font-weight:600;padding:11px 12px;border-radius:11px;text-align:left;width:100%;transition:.12s}
+    .sbtn span{font-size:17px;width:22px;text-align:center}
+    .sbtn:hover{background:rgba(255,255,255,.09);color:#fff}
+    .sbtn.on{background:rgba(255,255,255,.17);color:#fff}
+    header .wrap, main.wrap, .foot{margin-left:230px}
+    .wrap{max-width:1120px}
+    main.wrap{padding-left:26px;padding-right:26px}
+    header .htop .back{display:none !important}
+    h1{font-size:30px}
+    .tiles{grid-template-columns:repeat(4,1fr)}
+    .stats{max-width:560px}
+    #resaList,#nidosList{display:grid;grid-template-columns:1fr 1fr;gap:13px;align-items:start}
+    #resaList .lst,#nidosList .lst{margin-bottom:0}
+    #excList{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+    #excList .card{margin-bottom:0}
+    .lphoto{height:180px}
+    .plus{right:34px;bottom:34px}
+    .jr{max-width:760px}
+    textarea.jr{min-height:120px}
+  }
+  @media(min-width:1280px){ .tiles{grid-template-columns:repeat(4,1fr)} .wrap{max-width:1200px} }
 </style>
 </head>
 <body>
@@ -178,6 +208,18 @@
     <div><div class="ttl" id="viewTitle">Mexique 2026</div><div class="hsub" id="viewSub"></div></div>
     <button class="lo" id="logoutBtn">Quitter</button>
   </div></header>
+
+  <nav id="sidebar">
+    <div class="sbrand">🌊 Mexique 2026</div>
+    <button class="sbtn" data-go="home"><span>🏠</span> Accueil</button>
+    <button class="sbtn" data-go="tasks"><span>✅</span> Tâches</button>
+    <button class="sbtn" data-go="planning"><span>📅</span> Planning</button>
+    <button class="sbtn" data-go="excursions"><span>🚗</span> Excursions</button>
+    <button class="sbtn" data-go="reservation"><span>🏠</span> Réservation</button>
+    <button class="sbtn" data-go="journal"><span>📖</span> Noematix</button>
+    <button class="sbtn" data-go="nidos"><span>🌱</span> Nidos</button>
+    <button class="sbtn" data-go="coffre"><span>🔒</span> Coffre-fort</button>
+  </nav>
 
   <main class="wrap">
     <!-- HOME -->
@@ -266,6 +308,7 @@
     $("viewTitle").textContent=titles[v][0]; $("viewSub").textContent=titles[v][1];
     $("backBtn").classList.toggle("show",v!=="home");
     $("fab").classList.toggle("show",!!addHandlers[v]);
+    document.querySelectorAll('#sidebar [data-go]').forEach(function(b){b.classList.toggle('on',b.dataset.go===v)});
     window.scrollTo(0,0);
   }
   $("backBtn").addEventListener("click",function(){go("home")});
