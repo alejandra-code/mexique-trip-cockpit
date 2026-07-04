@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendrier Mexique 2026</title>
+<style>
+  :root{color-scheme:light;
+    --ocean:#0B3D4F;--teal:#17A2B8;--sand:#F6EEDF;--sand2:#EFE3CC;--terra:#E8734A;
+    --coral:#E85A4F;--ink:#12303A;--muted:#5C7480;--line:#E2D6C0;--green:#2FA36B;--amber:#E0952B;--card:#fff;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--sand);color:var(--ink);line-height:1.5;padding:0 0 40px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 14px}
+  header{background:linear-gradient(135deg,var(--ocean),var(--teal));color:#fff;padding:20px 0 18px;border-radius:0 0 22px 22px;margin-bottom:6px}
+  .htop{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  h1{margin:5px 0 2px;font-size:23px;font-weight:800}
+  .sub{opacity:.9;font-size:13px}
+  .cds{display:flex;gap:9px;margin-top:14px}
+  .cd{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:9px 11px;flex:1;text-align:center}
+  .cd .n{font-size:20px;font-weight:800;line-height:1}
+  .cd .l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;opacity:.85;margin-top:3px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin:14px 2px 4px}
+  .legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .status{font-size:12px;color:var(--muted);margin:10px 2px}
+  .daygroup{margin:16px 0 4px}
+  .dhead{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ocean);margin:0 2px 8px;display:flex;align-items:center;gap:8px}
+  .dhead .rule{flex:1;height:1px;background:var(--line)}
+  .ev{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--teal);border-radius:14px;padding:12px 13px;margin-bottom:9px;box-shadow:0 3px 12px rgba(11,61,79,.07)}
+  .ev.book{border-left-color:var(--coral)} .ev.cale{border-left-color:var(--amber)} .ev.conf{border-left-color:var(--green)}
+  .ev .et{font-weight:700;font-size:14.5px;display:flex;align-items:flex-start;gap:8px}
+  .ev .badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 7px;border-radius:9px;white-space:nowrap;margin-left:auto;flex-shrink:0}
+  .badge.b{background:#FBE6E4;color:var(--coral)} .badge.c{background:#FCF0DA;color:var(--amber)} .badge.g{background:#E4F5EC;color:var(--green)}
+  .ev .ett{font-size:12px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+  .ev .ed{font-size:12.5px;color:var(--muted);margin-top:8px;white-space:pre-wrap;max-height:60px;overflow:hidden;transition:max-height .25s}
+  .ev.open .ed{max-height:900px}
+  .ev .more{font-size:11.5px;color:var(--teal);font-weight:700;cursor:pointer;margin-top:6px;display:inline-block}
+  .err{background:#FBE6E4;border:1px solid var(--coral);color:var(--coral);border-radius:12px;padding:12px;font-size:13px;margin:14px 2px}
+  .load{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+  .spin{width:22px;height:22px;border:3px solid var(--sand2);border-top-color:var(--teal);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:20px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="htop">🇲🇽 Calendrier · connecté Google Calendar</div>
+  <h1>Voyage Mexique 2026</h1>
+  <div class="sub">26 juillet → 1<sup>er</sup> septembre · vue live de ton agenda</div>
+  <div class="cds">
+    <div class="cd"><div class="n" id="cdDays">—</div><div class="l">j. avant départ</div></div>
+    <div class="cd"><div class="n" id="cdEv">—</div><div class="l">events</div></div>
+    <div class="cd"><div class="n" id="cdTodo">—</div><div class="l">à réserver</div></div>
+  </div>
+</div></header>
+<div class="wrap">
+  <div class="legend">
+    <span><b style="background:var(--coral)"></b>À réserver</span>
+    <span><b style="background:var(--amber)"></b>À caler</span>
+    <span><b style="background:var(--green)"></b>Confirmé</span>
+  </div>
+  <div id="out"><div class="load"><div class="spin"></div>Connexion à Google Calendar…</div></div>
+  <div class="foot">Vue live — bouton Recharger en haut pour rafraîchir.</div>
+</div>
+<script>
+(function(){
+  var MONTHS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  var DAYS=["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+  function parseStart(e){
+    if(e.start&&e.start.dateTime)return new Date(e.start.dateTime);
+    if(e.start&&e.start.date)return new Date(e.start.date+"T00:00:00");
+    return new Date(8640000000000000);
+  }
+  function isAllDay(e){return e.start&&e.start.date&&!e.start.dateTime}
+  function fmtDay(dt){return DAYS[dt.getDay()]+" "+dt.getDate()+" "+MONTHS[dt.getMonth()]}
+  function fmtTime(e){
+    if(isAllDay(e))return "Journée";
+    var s=new Date(e.start.dateTime),h=String(s.getHours()).padStart(2,"0")+":"+String(s.getMinutes()).padStart(2,"0");
+    return h;
+  }
+  function cls(title){
+    var t=(title||"").toUpperCase();
+    if(t.indexOf("RÉSERVER")>-1||t.indexOf("RESERVER")>-1)return{k:"book",b:"b",t:"À réserver"};
+    if(t.indexOf("CALER")>-1)return{k:"cale",b:"c",t:"À caler"};
+    return{k:"conf",b:"g",t:"Confirmé"};
+  }
+  function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+
+  async function load(){
+    var out=document.getElementById("out");
+    try{
+      var r=await window.cowork.callMcpTool("mcp__91878c05-bb76-47ed-bcf2-b0aee08549b3__list_events",{
+        startTime:"2026-07-24T00:00:00Z",endTime:"2026-09-02T00:00:00Z",pageSize:50,orderBy:"startTime"
+      });
+      var data=r.structuredContent||JSON.parse(r.content[0].text);
+      var events=(data.events||[]).filter(function(e){return e.status!=="cancelled"});
+      // countdown
+      var d=Math.ceil((new Date("2026-07-26T12:45:00")-new Date())/86400000);
+      document.getElementById("cdDays").textContent=d>0?d:"🎉";
+      document.getElementById("cdEv").textContent=events.length;
+      var todo=events.filter(function(e){var c=cls(e.summary);return c.k!=="conf"}).length;
+      document.getElementById("cdTodo").textContent=todo;
+      // sort + group by day
+      events.sort(function(a,b){return parseStart(a)-parseStart(b)});
+      if(!events.length){out.innerHTML='<div class="err">Aucun event trouvé sur la fenêtre du voyage.</div>';return}
+      var html="",lastKey="";
+      events.forEach(function(e){
+        var dt=parseStart(e),key=dt.getFullYear()+"-"+dt.getMonth()+"-"+dt.getDate();
+        if(key!==lastKey){if(lastKey)html+="</div>";html+='<div class="daygroup"><div class="dhead">'+fmtDay(dt)+'<span class="rule"></span></div>';lastKey=key}
+        var c=cls(e.summary),desc=esc(e.description||"").trim();
+        var long=desc.length>140;
+        html+='<div class="ev '+c.k+'">'+
+          '<div class="et">'+esc(e.summary||"(sans titre)")+'<span class="badge '+c.b+'">'+c.t+'</span></div>'+
+          '<div class="ett">'+fmtTime(e)+'</div>'+
+          (desc?'<div class="ed">'+desc+'</div>'+(long?'<span class="more">Voir plus ▾</span>':""):"")+
+        '</div>';
+      });
+      if(lastKey)html+="</div>";
+      out.innerHTML=html;
+      // expand/collapse full description
+      out.querySelectorAll(".more").forEach(function(m){
+        m.addEventListener("click",function(){
+          var ev=m.closest(".ev");ev.classList.toggle("open");
+          m.textContent=ev.classList.contains("open")?"Voir moins ▴":"Voir plus ▾";
+        });
+      });
+    }catch(err){
+      out.innerHTML='<div class="err">Impossible de charger l\'agenda : '+esc(String(err&&err.message||err))+'</div>';
+    }
+  }
+  load();
+})();
+</script>
+</body>
+</html>
