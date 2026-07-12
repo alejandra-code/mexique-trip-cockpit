@@ -244,6 +244,7 @@
     <button class="sbtn" data-go="journal"><span>📖</span> Noematix</button>
     <button class="sbtn" data-go="nidos"><span>🌱</span> Nidos</button>
     <button class="sbtn" data-go="coffre"><span>🔒</span> Coffre-fort</button>
+    <button class="sbtn" data-go="bagages"><span>🧳</span> Bagages</button>
   </nav>
 
   <main class="wrap">
@@ -262,6 +263,7 @@
         <button class="tile t5" data-go="journal"><div class="ic">📖</div><div class="nm">Noematix</div><div class="ds">Journal de voyage</div><div class="cnt" id="cJournal"></div></button>
         <button class="tile t6" data-go="nidos"><div class="ic">🌱</div><div class="nm">Nidos</div><div class="ds">Projet foncier & docs</div><div class="cnt" id="cNidos"></div></button>
         <button class="tile t7" data-go="coffre"><div class="ic">🔒</div><div class="nm">Coffre-fort</div><div class="ds">Docs & archives</div><div class="cnt" id="cCoffre"></div></button>
+        <button class="tile t3" data-go="bagages"><div class="ic">🧳</div><div class="nm">Bagages</div><div class="ds">Contingents & préparation</div><div class="cnt" id="cBagages"></div></button>
       </div>
       <div class="sync" id="syncTxt"></div>
     </div>
@@ -279,6 +281,20 @@
     <div class="view" id="v-coffre">
       <div class="warn">🔒 Ce coffre stocke des <b>liens</b> vers tes docs (Drive, protégé par ton compte). Rien de sensible n'est hébergé sur le dashboard. Accès réservé à ton login.</div>
       <div id="coffreList"></div>
+    </div>
+    <div class="view" id="v-bagages">
+      <div class="card">
+        <div class="mhead">🧳 Contingents bagages <span class="tag">AF inclus · Aeroméxico payant</span></div>
+        <div style="margin-top:8px">
+          <div class="kv"><div class="k">Moi</div><div class="v">1 valise cabine + 1 sac</div></div>
+          <div class="kv"><div class="k">Violette</div><div class="v">3 bagages soute · 1 valise cabine · 1 sac</div></div>
+          <div class="kv"><div class="k">Liliana</div><div class="v">1 valise cabine + 1 sac</div></div>
+          <div class="kv"><div class="k">Babou</div><div class="v">3 bagages soute · 1 valise cabine · 1 sac</div></div>
+        </div>
+        <div class="budnote">Total soute famille : <b>6 bagages</b> (Violette 3 + Babou 3). ⚠️ Ton billet AF est <b>sans soute</b> → répartis tes affaires soute sous les contingents de Violette/Babou. Sur les vols internes <b>Aeroméxico, la soute est payante</b> — à budgéter.</div>
+      </div>
+      <p class="intro" style="margin-top:14px">Ta liste de préparation — coche au fur et à mesure. Touche + pour ajouter un article.</p>
+      <div id="bagList"></div>
     </div>
   </main>
 
@@ -324,7 +340,7 @@
   sb.auth.onAuthStateChange(function(ev,session){ if(session){$("login").style.display="none";$("app").style.display="block";loadAll();} });
 
   // ---------- ROUTER ----------
-  var titles={home:["Mexique 2026","26 juil → 1ᵉʳ sept · Puerto Escondido"],tasks:["Tâches",""],planning:["Planning",""],excursions:["Excursions",""],reservation:["Réservation",""],journal:["Noematix — Journal",""],nidos:["Nidos",""],coffre:["Coffre-fort",""]};
+  var titles={home:["Mexique 2026","26 juil → 1ᵉʳ sept · Puerto Escondido"],tasks:["Tâches",""],planning:["Planning",""],excursions:["Excursions",""],reservation:["Réservation",""],journal:["Noematix — Journal",""],nidos:["Nidos",""],coffre:["Coffre-fort",""],bagages:["Bagages",""]};
   var cur="home", addHandlers={};
   function go(v){
     cur=v;
@@ -351,7 +367,7 @@
   function closeSheet(){$("modal").classList.remove("show")}
 
   // ---------- DATA ----------
-  var D={tasks:[],events:[],exc:[],listings:[],journal:[],docs:[]};
+  var D={tasks:[],events:[],exc:[],listings:[],journal:[],docs:[],packing:[]};
   async function loadAll(){
     $("syncTxt").textContent="Synchronisation…";
     try{
@@ -362,13 +378,14 @@
         sb.from("voyage_listings").select("*").order("sort"),
         sb.from("voyage_messages").select("*").order("created_at"),
         sb.from("voyage_journal").select("*").order("entry_date",{ascending:false}),
-        sb.from("voyage_docs").select("*").order("created_at")
+        sb.from("voyage_docs").select("*").order("created_at"),
+        sb.from("voyage_packing").select("*").order("person").order("sort")
       ]);
       var err=q.find(function(r){return r.error}); if(err)throw err.error;
       D.tasks=q[0].data||[]; D.events=q[1].data||[]; D.exc=q[2].data||[];
       var listings=q[3].data||[], msgs=q[4].data||[];
       var byId={}; listings.forEach(function(l){l.msgs=[];byId[l.id]=l}); msgs.forEach(function(m){if(byId[m.listing_id])byId[m.listing_id].msgs.push(m)});
-      D.listings=listings; D.journal=q[5].data||[]; D.docs=q[6].data||[];
+      D.listings=listings; D.journal=q[5].data||[]; D.docs=q[6].data||[]; D.packing=q[7].data||[];
       renderAll(); $("syncTxt").textContent="☁︎ synchronisé"; $("foot").textContent="Privé · synchronisé (Supabase) · "+(new Date().toLocaleTimeString("fr-FR"));
     }catch(e){ $("syncTxt").textContent="⚠︎ erreur de chargement : "+(e.message||e); }
   }
@@ -386,7 +403,9 @@
     $("cJournal").textContent=D.journal.length+" entrée"+(D.journal.length>1?"s":"");
     $("cNidos").textContent=nid+" terrain"+(nid>1?"s":"")+" · "+D.docs.filter(function(d){return d.module==="nidos"}).length+" docs";
     $("cCoffre").textContent=D.docs.filter(function(d){return d.module==="coffre"}).length+" docs";
-    renderTasks(); renderPlanning(); renderExc(); renderResa(); renderJournal(); renderNidos(); renderCoffre();
+    var packLeft=D.packing.filter(function(p){return !p.packed}).length;
+    $("cBagages").textContent=packLeft+" à préparer";
+    renderTasks(); renderPlanning(); renderExc(); renderResa(); renderJournal(); renderNidos(); renderCoffre(); renderBagages();
   }
 
   // ===== TASKS =====
@@ -529,6 +548,36 @@
   addHandlers.coffre=function(){
     sheet("Ajouter au coffre",'<input class="fld" id="f_t" placeholder="Titre (ex : Passeport Seb)"><input class="fld" id="f_c" placeholder="Catégorie (Identité, Santé…)"><input class="fld" id="f_u" placeholder="Lien Drive (recommandé)"><input class="fld" id="f_note" placeholder="Note (optionnel)">',
     async function(){var t=$("f_t").value.trim();if(!t)return;closeSheet();await sb.from("voyage_docs").insert({module:"coffre",title:t,category:$("f_c").value.trim()||"Divers",url:$("f_u").value.trim(),note:$("f_note").value.trim()});ping("✓ Ajouté");loadAll();});
+  };
+
+  // ===== BAGAGES =====
+  function renderBagages(){
+    var el=$("bagList");
+    if(!D.packing.length){el.innerHTML='<div class="empty">Liste vide. Touche + pour ajouter.</div>';return}
+    var persons=[{k:"seb",label:"🧳 Moi (Seb)"},{k:"violette",label:"👧 Violette"}];
+    var extra={}; D.packing.forEach(function(p){if(p.person!=="seb"&&p.person!=="violette")extra[p.person]=1});
+    Object.keys(extra).forEach(function(k){persons.push({k:k,label:"🧳 "+k})});
+    var html="";
+    persons.forEach(function(P){
+      var items=D.packing.filter(function(p){return p.person===P.k});
+      if(!items.length)return;
+      var done=items.filter(function(p){return p.packed}).length;
+      html+='<div class="grp">'+P.label+' · '+done+'/'+items.length+'</div><div class="card">';
+      var lastCat="";
+      items.forEach(function(p){
+        if((p.category||"")!==lastCat){lastCat=p.category||"";html+='<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:9px 0 1px">'+esc(lastCat)+'</div>'}
+        html+='<div class="tk '+(p.packed?"done":"")+'"><div class="ckbox" data-pk="'+p.id+'">'+(p.packed?"✓":"")+'</div><div class="tt">'+esc(p.item)+'</div><button class="del" data-delpk="'+p.id+'">✕</button></div>';
+      });
+      html+='</div>';
+    });
+    el.innerHTML=html;
+    el.querySelectorAll("[data-pk]").forEach(function(b){b.addEventListener("click",function(){togglePack(b.dataset.pk)})});
+    el.querySelectorAll("[data-delpk]").forEach(function(b){b.addEventListener("click",function(){delRow("voyage_packing",b.dataset.delpk)})});
+  }
+  async function togglePack(id){var p=D.packing.find(function(x){return x.id==id});if(!p)return;p.packed=!p.packed;renderAll();await sb.from("voyage_packing").update({packed:p.packed}).eq("id",id);}
+  addHandlers.bagages=function(){
+    sheet("Ajouter un article",'<select class="fld" id="f_p"><option value="seb">Moi (Seb)</option><option value="violette">Violette</option></select><input class="fld" id="f_c" placeholder="Catégorie (Plage, Santé…)"><input class="fld" id="f_i" placeholder="Article">',
+    async function(){var i=$("f_i").value.trim();if(!i)return;closeSheet();await sb.from("voyage_packing").insert({person:$("f_p").value,category:$("f_c").value.trim()||"Divers",item:i,sort:Date.now()%100000});ping("✓ Ajouté");loadAll();});
   };
 
   // ===== shared delete =====
