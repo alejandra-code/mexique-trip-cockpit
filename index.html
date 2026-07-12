@@ -284,14 +284,14 @@
     </div>
     <div class="view" id="v-bagages">
       <div class="card">
-        <div class="mhead">🧳 Contingents bagages <span class="tag">AF inclus · Aeroméxico payant</span></div>
+        <div class="mhead">🧳 Plan bagages <span class="tag">AF inclus · Aeroméxico payant</span></div>
         <div style="margin-top:8px">
-          <div class="kv"><div class="k">Moi</div><div class="v">1 valise cabine + 1 sac</div></div>
-          <div class="kv"><div class="k">Violette</div><div class="v">3 bagages soute · 1 valise cabine · 1 sac</div></div>
-          <div class="kv"><div class="k">Liliana</div><div class="v">1 valise cabine + 1 sac</div></div>
-          <div class="kv"><div class="k">Babou</div><div class="v">3 bagages soute · 1 valise cabine · 1 sac</div></div>
+          <div class="kv"><div class="k">Départ 26/07</div><div class="v">Seb · Liliana · Violette</div></div>
+          <div class="kv"><div class="k">En soute</div><div class="v">2 grosses valises partagées (sous le contingent de Violette : 3 dispo)</div></div>
+          <div class="kv"><div class="k">En cabine</div><div class="v">1 valise cabine + 1 sac chacun</div></div>
+          <div class="kv"><div class="k">Babou · 14/08</div><div class="v">rejoint : 3 soute + 1 cabine + 1 sac</div></div>
         </div>
-        <div class="budnote">Total soute famille : <b>6 bagages</b> (Violette 3 + Babou 3). ⚠️ Ton billet AF est <b>sans soute</b> → répartis tes affaires soute sous les contingents de Violette/Babou. Sur les vols internes <b>Aeroméxico, la soute est payante</b> — à budgéter.</div>
+        <div class="budnote">⚠️ Ton billet AF est <b>sans soute perso</b> → tes affaires soute vont dans les <b>2 grosses valises</b> (contingent Violette). Sur les vols internes <b>Aeroméxico, la soute est payante</b> — à budgéter.</div>
       </div>
       <p class="intro" style="margin-top:14px">Ta liste de préparation — coche au fur et à mesure. Touche + pour ajouter un article.</p>
       <div id="bagList"></div>
@@ -554,18 +554,14 @@
   function renderBagages(){
     var el=$("bagList");
     if(!D.packing.length){el.innerHTML='<div class="empty">Liste vide. Touche + pour ajouter.</div>';return}
-    var persons=[{k:"seb",label:"🧳 Moi (Seb)"},{k:"violette",label:"👧 Violette"}];
-    var extra={}; D.packing.forEach(function(p){if(p.person!=="seb"&&p.person!=="violette")extra[p.person]=1});
-    Object.keys(extra).forEach(function(k){persons.push({k:k,label:"🧳 "+k})});
+    var items=D.packing.slice().sort(function(a,b){return (a.sort||0)-(b.sort||0)});
+    var cats=[], byCat={};
+    items.forEach(function(p){var c=p.category||"Divers"; if(!byCat[c]){byCat[c]=[];cats.push(c)} byCat[c].push(p)});
     var html="";
-    persons.forEach(function(P){
-      var items=D.packing.filter(function(p){return p.person===P.k});
-      if(!items.length)return;
-      var done=items.filter(function(p){return p.packed}).length;
-      html+='<div class="grp">'+P.label+' · '+done+'/'+items.length+'</div><div class="card">';
-      var lastCat="";
-      items.forEach(function(p){
-        if((p.category||"")!==lastCat){lastCat=p.category||"";html+='<div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:9px 0 1px">'+esc(lastCat)+'</div>'}
+    cats.forEach(function(c){
+      var arr=byCat[c], done=arr.filter(function(p){return p.packed}).length;
+      html+='<div class="grp">'+esc(c)+' · '+done+'/'+arr.length+'</div><div class="card">';
+      arr.forEach(function(p){
         html+='<div class="tk '+(p.packed?"done":"")+'"><div class="ckbox" data-pk="'+p.id+'">'+(p.packed?"✓":"")+'</div><div class="tt">'+esc(p.item)+'</div><button class="del" data-delpk="'+p.id+'">✕</button></div>';
       });
       html+='</div>';
@@ -576,8 +572,8 @@
   }
   async function togglePack(id){var p=D.packing.find(function(x){return x.id==id});if(!p)return;p.packed=!p.packed;renderAll();await sb.from("voyage_packing").update({packed:p.packed}).eq("id",id);}
   addHandlers.bagages=function(){
-    sheet("Ajouter un article",'<select class="fld" id="f_p"><option value="seb">Moi (Seb)</option><option value="violette">Violette</option></select><input class="fld" id="f_c" placeholder="Catégorie (Plage, Santé…)"><input class="fld" id="f_i" placeholder="Article">',
-    async function(){var i=$("f_i").value.trim();if(!i)return;closeSheet();await sb.from("voyage_packing").insert({person:$("f_p").value,category:$("f_c").value.trim()||"Divers",item:i,sort:Date.now()%100000});ping("✓ Ajouté");loadAll();});
+    sheet("Ajouter un article",'<input class="fld" id="f_c" placeholder="Catégorie (ex : 🎒 Sac cabine Seb)"><input class="fld" id="f_i" placeholder="Article">',
+    async function(){var i=$("f_i").value.trim();if(!i)return;closeSheet();await sb.from("voyage_packing").insert({person:"trip",category:$("f_c").value.trim()||"Divers",item:i,sort:Date.now()%100000});ping("✓ Ajouté");loadAll();});
   };
 
   // ===== shared delete =====
