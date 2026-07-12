@@ -121,6 +121,28 @@
   .addbar .btn{padding:9px 13px}
   .lfoot{display:flex;justify-content:space-between;margin-top:9px}
 
+  /* réservation : bloc confirmé (hero) */
+  .reshdr{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:22px 2px 9px}
+  .hero{border:1px solid var(--line);border-top:4px solid var(--green);border-radius:16px;background:linear-gradient(180deg,#F1FAF4,#fff 70px);padding:15px 15px 16px;box-shadow:var(--shadow);margin-bottom:6px}
+  .hero .htitle{display:flex;align-items:center;gap:9px;font-weight:800;font-size:18px;flex-wrap:wrap}
+  .hbadge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;background:var(--green);color:#fff;padding:4px 10px;border-radius:20px}
+  .hsub{font-size:12.5px;color:var(--muted);margin:4px 0 13px}
+  .hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px;margin-bottom:6px}
+  .hcell{background:var(--sand);border:1px solid var(--line);border-radius:11px;padding:9px 10px}
+  .hcell .k{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .hcell .v{font-size:14px;font-weight:700;margin-top:2px;color:var(--ink)}
+  .hcell .v.big{font-size:15.5px;color:var(--ocean)}
+  .hsec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:14px 2px 6px}
+  .hkv{font-size:13px;line-height:1.5;color:var(--ink)}
+  .hkv b{font-weight:800}
+  .hchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+  .chip{font-size:11.5px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 11px;color:var(--ink)}
+  .hbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .hbtn{flex:1 1 auto;text-align:center;text-decoration:none;font-size:12.5px;font-weight:700;padding:10px 12px;border-radius:11px;background:var(--ocean);color:#fff;white-space:nowrap}
+  .hbtn.alt{background:#fff;color:var(--ocean);border:1px solid var(--line)}
+  .hwarn{background:#FBEAD6;border:1px solid var(--sun);border-radius:12px;padding:11px 13px;font-size:12.5px;color:#8a5a2b;margin-top:14px;line-height:1.55}
+  .hwarn b{color:#7a4d22}
+
   /* excursions */
   .exc{border-left:5px solid var(--terra)}
   .exc h3{margin:0;font-size:17px}
@@ -280,7 +302,7 @@
     <div class="view" id="v-tasks"><div id="tasksList"></div></div>
     <div class="view" id="v-planning"><p class="intro">Ton planning voyage. Vols confirmés + résas à caler.</p><div class="tl" id="planList"></div></div>
     <div class="view" id="v-excursions"><p class="intro">Tes escapades depuis Puerto : hôtel, activités, bons plans. Touche un champ pour l'éditer.</p><div id="excList"></div></div>
-    <div class="view" id="v-reservation"><p class="intro">Tes annonces Airbnb et le suivi des échanges. Colle chaque message dans le fil.</p><div id="resaList"></div></div>
+    <div class="view" id="v-reservation"><p class="intro">Ta réservation confirmée, toutes les infos pratiques, et les autres pistes explorées.</p><div id="resaList"></div></div>
     <div class="view" id="v-journal"><p class="intro">Ton journal de voyage NOEMATIX — le narratif, pas les to-do.</p><div id="jrList"></div></div>
     <div class="view" id="v-nidos">
       <p class="intro">Projet foncier Nidos / Ceiba — documentation, annonces terrain et échanges. ⚠️ Frontière fiscale : aucune dépense Nidos sur Qonto NOEMATIX.</p>
@@ -477,8 +499,8 @@
   }
 
   // ===== RÉSERVATION (airbnb) + NIDOS listings share renderer =====
-  function renderListings(container,cat,statusSeq){
-    var items=D.listings.filter(function(l){return l.category===cat});
+  function renderListings(container,cat,statusSeq,excludeId){
+    var items=D.listings.filter(function(l){return l.category===cat&&l.id!==excludeId});
     if(!items.length){container.innerHTML='<div class="empty">Aucune annonce.</div>';return}
     container.innerHTML="";
     items.forEach(function(L){
@@ -497,7 +519,46 @@
     });
   }
   var AIR_ST=["À contacter","Contacté","En négo","Réservé","Écarté"], NID_ST=["À visiter","Contacté","Visité","Négo","Écarté"];
-  function renderResa(){renderListings($("resaList"),"airbnb",AIR_ST)}
+  function resaHeroHtml(){
+    var maps="https://maps.app.goo.gl/pvRFUytZqMMcHY49A",
+        ad="https://www.airbnb.fr/rooms/1062297537720275103",
+        conv="https://www.airbnb.fr/hosting/messages/2575701823",
+        manuel="https://drive.google.com/file/d/1pGFiwvrZKb0N52xs4iB00u3ETGCq0YIO/view",
+        conc="https://localbird.io/partner/nagaa/";
+    return '<div class="hero">'
+     +'<div class="htitle">🏠 Casa Boga <span class="hbadge">✅ Confirmé &amp; payé</span></div>'
+     +'<div class="hsub">Maison design indépendante · La Punta / Punta Zicatela, Puerto Escondido</div>'
+     +'<div class="hgrid">'
+       +'<div class="hcell"><div class="k">Arrivée</div><div class="v">lun. 27/07 · 15h00</div></div>'
+       +'<div class="hcell"><div class="k">Départ</div><div class="v">mer. 05/08 · 11h00</div></div>'
+       +'<div class="hcell"><div class="k">Nuits</div><div class="v">9</div></div>'
+       +'<div class="hcell"><div class="k">Voyageurs</div><div class="v">Seb + Violette</div></div>'
+       +'<div class="hcell"><div class="k">Montant payé</div><div class="v big">1 353,05 €</div></div>'
+       +'<div class="hcell"><div class="k">Code</div><div class="v">HMMMBFKY4C</div></div>'
+     +'</div>'
+     +'<div class="hsec">Adresse</div>'
+     +'<div class="hkv">Calle Guerrero s/n, <b>Casa #4</b> « Casas Palmeras », Brisas de Zicatela, La Punta — derrière la communauté écologique de La Punta. Oaxaca 70938.</div>'
+     +'<div class="hsec">Arrivée &amp; accès</div>'
+     +'<div class="hkv">🔑 Boîte à clé sécurisée — <b>procédure à demander à l\'hôte</b>. 📶 Wifi communiqué 48 h avant l\'arrivée.</div>'
+     +'<div class="hsec">La maison</div>'
+     +'<div class="hchips"><span class="chip">Indépendante</span><span class="chip">2 ch. clim + salle TV</span><span class="chip">🏊 Piscine privée</span><span class="chip">🛰️ Starlink</span><span class="chip">🧹 Ménage hebdo inclus</span><span class="chip">6 pers. max</span><span class="chip">🚫 Animaux</span></div>'
+     +'<div class="hsec">Hôte</div>'
+     +'<div class="hkv"><b>Gabriel</b> — co-hôtes Chema, <b>Jorge</b> (contact principal), Daniel. Annulation : <b>non remboursable</b>.</div>'
+     +'<div class="hbtns">'
+       +'<a class="hbtn" href="'+maps+'" target="_blank" rel="noopener">📍 Itinéraire</a>'
+       +'<a class="hbtn alt" href="'+ad+'" target="_blank" rel="noopener">Annonce ↗</a>'
+       +'<a class="hbtn alt" href="'+conv+'" target="_blank" rel="noopener">Conversation ↗</a>'
+       +'<a class="hbtn alt" href="'+manuel+'" target="_blank" rel="noopener">Manuel maison ↗</a>'
+       +'<a class="hbtn alt" href="'+conc+'" target="_blank" rel="noopener">Conciergerie ↗</a>'
+     +'</div>'
+     +'<div class="hwarn"><b>Tronçon de ta mère (Véronique)</b> — 10 → 31 août, 21 nuits. Offre spéciale ~<b>78 000 MXN</b>. Airbnb a confirmé à l\'hôte que frais &amp; taxes sont proportionnels au tien (non réductibles). <b>Décision en attente.</b><br>⚠️ Trou logement <b>5 → 10 août</b> (hors Casa Boga) à couvrir.</div>'
+    +'</div>';
+  }
+  function renderResa(){
+    var c=$("resaList");
+    c.innerHTML=resaHeroHtml()+'<div class="reshdr">🔎 Autres logements explorés</div><div id="resaOthers"></div>';
+    renderListings($("resaOthers"),"airbnb",AIR_ST,"air_gabriel");
+  }
   async function addMsg(L,who,body){var label=new Date().toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});L.msgs=L.msgs||[];L.msgs.push({who:who,date_label:label,body:body});renderAll();ping("✓ Message");await sb.from("voyage_messages").insert({listing_id:L.id,who:who,date_label:label,body:body});}
   function newListing(cat){
     sheet("Nouvelle annonce",'<input class="fld" id="f_n" placeholder="Nom / contact"><input class="fld" id="f_z" placeholder="Zone"><input class="fld" id="f_pr" placeholder="Prix"><input class="fld" id="f_r" placeholder="Chambres / surface"><input class="fld" id="f_l" placeholder="Lien (optionnel)">',
