@@ -186,6 +186,15 @@
   }
   @media(min-width:1280px){ .tiles{grid-template-columns:repeat(4,1fr)} .wrap{max-width:1200px} }
 
+  /* ===== BAGAGES ===== */
+  .bagcard{padding:13px 14px}
+  .bagcat{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14.5px}
+  .bagcat .bagcount{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
+  .bagbar{height:5px;border-radius:4px;background:var(--sand2);overflow:hidden;margin:8px 0 3px}
+  .bagbar .bagfill{height:100%;background:linear-gradient(90deg,var(--teal),var(--terra));border-radius:4px;transition:width .3s}
+  .qty{font-size:11px;font-weight:800;color:var(--teal);background:var(--sand);padding:1px 6px;border-radius:8px}
+  #bagList .tt{cursor:pointer}
+
   /* ===== THEME : fond Bahía de Manzanillo + glassmorphisme ===== */
   body{background:transparent}
   body::before{content:"";position:fixed;inset:0;z-index:-1;
@@ -293,7 +302,7 @@
         </div>
         <div class="budnote">⚠️ Ton billet AF est <b>sans soute perso</b> → tes affaires soute vont dans les <b>2 grosses valises</b> (contingent Violette). Sur les vols internes <b>Aeroméxico, la soute est payante</b> — à budgéter.</div>
       </div>
-      <p class="intro" style="margin-top:14px">Ta liste de préparation — coche au fur et à mesure. Touche + pour ajouter un article.</p>
+      <p class="intro" style="margin-top:14px">Coche à mesure · <b>touche un article pour l'éditer</b> (nom, catégorie, quantité) · <b>+</b> pour ajouter · ✕ pour supprimer.</p>
       <div id="bagList"></div>
     </div>
   </main>
@@ -551,6 +560,18 @@
   };
 
   // ===== BAGAGES =====
+  function itemEmoji(s){
+    s=(s||"").toLowerCase();
+    var map=[[/passeport|document/,"🛂"],[/livret/,"📑"],[/carnet de santé|thermom|dolipr/,"🌡️"],[/carte banc|carte/,"💳"],[/copie/,"🖨️"],[/permis/,"🚙"],
+      [/laptop|ordi/,"💻"],[/casque|écouteur/,"🎧"],[/powerbank|batterie/,"🔋"],[/adaptateur|multiprise|chargeur|prise/,"🔌"],[/webcam/,"📷"],[/souris/,"🖱️"],[/esim|forfait|data/,"📶"],
+      [/répulsif|moustique/,"🦟"],[/sérum/,"💧"],[/médicament|médoc/,"💊"],[/crème solaire|solaire|toilette|après-soleil|gel/,"🧴"],[/trousse|pansement/,"🩹"],
+      [/maillot/,"🩱"],[/serviette/,"🏖️"],[/brassard|flotteur/,"🛟"],[/lunettes/,"🕶️"],[/chaussures d|sandale|tong/,"🩴"],
+      [/doudou/,"🧸"],[/tablette/,"📱"],[/snack/,"🍪"],[/gourde/,"🥤"],[/jeux|jouet|livre/,"🧩"],
+      [/t-shirt|tee|lin/,"👕"],[/short/,"🩳"],[/robe/,"👗"],[/pyjama/,"🛌"],[/sous-vêtement/,"🩲"],[/chaussette/,"🧦"],[/sweat|gilet|veste/,"🧥"],[/casquette|chapeau/,"🧢"],[/tenue|rechange/,"👔"],
+      [/siège auto|rehausseur/,"🚗"],[/sac/,"🛍️"]];
+    for(var i=0;i<map.length;i++){if(map[i][0].test(s))return map[i][1]}
+    return "📦";
+  }
   function renderBagages(){
     var el=$("bagList");
     if(!D.packing.length){el.innerHTML='<div class="empty">Liste vide. Touche + pour ajouter.</div>';return}
@@ -559,21 +580,32 @@
     items.forEach(function(p){var c=p.category||"Divers"; if(!byCat[c]){byCat[c]=[];cats.push(c)} byCat[c].push(p)});
     var html="";
     cats.forEach(function(c){
-      var arr=byCat[c], done=arr.filter(function(p){return p.packed}).length;
-      html+='<div class="grp">'+esc(c)+' · '+done+'/'+arr.length+'</div><div class="card">';
+      var arr=byCat[c], done=arr.filter(function(p){return p.packed}).length, pct=Math.round(done/arr.length*100);
+      html+='<div class="card bagcard"><div class="bagcat"><span>'+esc(c)+'</span><span class="bagcount">'+done+'/'+arr.length+'</span></div>'+
+        '<div class="bagbar"><div class="bagfill" style="width:'+pct+'%"></div></div>';
       arr.forEach(function(p){
-        html+='<div class="tk '+(p.packed?"done":"")+'"><div class="ckbox" data-pk="'+p.id+'">'+(p.packed?"✓":"")+'</div><div class="tt">'+esc(p.item)+'</div><button class="del" data-delpk="'+p.id+'">✕</button></div>';
+        var qty=(p.qty&&p.qty>1)?' <span class="qty">×'+p.qty+'</span>':'';
+        html+='<div class="tk '+(p.packed?"done":"")+'"><div class="ckbox" data-pk="'+p.id+'">'+(p.packed?"✓":"")+'</div>'+
+          '<div class="tt" data-editpk="'+p.id+'">'+itemEmoji(p.item)+' '+esc(p.item)+qty+'</div>'+
+          '<button class="del" data-delpk="'+p.id+'">✕</button></div>';
       });
       html+='</div>';
     });
     el.innerHTML=html;
     el.querySelectorAll("[data-pk]").forEach(function(b){b.addEventListener("click",function(){togglePack(b.dataset.pk)})});
+    el.querySelectorAll("[data-editpk]").forEach(function(b){b.addEventListener("click",function(){editPack(b.dataset.editpk)})});
     el.querySelectorAll("[data-delpk]").forEach(function(b){b.addEventListener("click",function(){delRow("voyage_packing",b.dataset.delpk)})});
   }
   async function togglePack(id){var p=D.packing.find(function(x){return x.id==id});if(!p)return;p.packed=!p.packed;renderAll();await sb.from("voyage_packing").update({packed:p.packed}).eq("id",id);}
+  function editPack(id){
+    var p=D.packing.find(function(x){return x.id==id});if(!p)return;
+    function a(v){return (v||"").replace(/"/g,"&quot;")}
+    sheet("Modifier l'article",'<input class="fld" id="e_i" value="'+a(esc(p.item))+'"><input class="fld" id="e_c" value="'+a(esc(p.category||""))+'"><input class="fld" id="e_q" type="number" placeholder="Quantité" value="'+(p.qty||"")+'">',
+    async function(){var it=$("e_i").value.trim();if(!it)return;var q=parseInt($("e_q").value,10);closeSheet();await sb.from("voyage_packing").update({item:it,category:$("e_c").value.trim()||"Divers",qty:isNaN(q)?null:q}).eq("id",id);ping("✓ Modifié");loadAll();});
+  }
   addHandlers.bagages=function(){
-    sheet("Ajouter un article",'<input class="fld" id="f_c" placeholder="Catégorie (ex : 🎒 Sac cabine Seb)"><input class="fld" id="f_i" placeholder="Article">',
-    async function(){var i=$("f_i").value.trim();if(!i)return;closeSheet();await sb.from("voyage_packing").insert({person:"trip",category:$("f_c").value.trim()||"Divers",item:i,sort:Date.now()%100000});ping("✓ Ajouté");loadAll();});
+    sheet("Ajouter un article",'<input class="fld" id="f_c" placeholder="Catégorie (ex : 🎒 Sac cabine Seb)"><input class="fld" id="f_i" placeholder="Article"><input class="fld" id="f_q" type="number" placeholder="Quantité (optionnel)">',
+    async function(){var i=$("f_i").value.trim();if(!i)return;var q=parseInt($("f_q").value,10);closeSheet();await sb.from("voyage_packing").insert({person:"trip",category:$("f_c").value.trim()||"Divers",item:i,qty:isNaN(q)?null:q,sort:Date.now()%100000});ping("✓ Ajouté");loadAll();});
   };
 
   // ===== shared delete =====
